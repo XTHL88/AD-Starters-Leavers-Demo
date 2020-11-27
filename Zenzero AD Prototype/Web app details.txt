@@ -1,0 +1,30 @@
+Redirect uri http://localhost
+Client ID a56d8c3c-36bd-47a6-b236-7f7b3f7f2f23
+Tenant ID 8963d1dc-8cb9-4ca8-9c4e-ed8464a768a9
+Secret V0Hs-KF-qysVrifm-JT-Uj_97ip55dms2N
+
+displayName
+givenName (forename)
+surname
+userPrincipalName
+mail
+passwordPolicies
+passwordProfile
+assignedPlan
+assignedLicenses
+licenseAssignmentStates
+mailboxSettings
+mailNickname
+otherMails
+
+Interesting properties to look into in the future:
+employeeHireDate
+employeeType
+jobTitle
+lastPasswordChangeDateTime (could be used to force password changes every x weeks)
+mobilePhone
+postalCode and streetAddress
+preferredLanguage
+preferredName
+
+https://docs.microsoft.com/en-us/graph/api/resources/user?view=graph-rest-1.0#properties

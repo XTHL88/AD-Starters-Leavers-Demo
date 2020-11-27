@@ -1,0 +1,73 @@
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Zenzero AD Prototype.exe
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Zenzero AD Prototype.deps.json
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Zenzero AD Prototype.runtimeconfig.json
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Zenzero AD Prototype.runtimeconfig.dev.json
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Zenzero AD Prototype.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Zenzero AD Prototype.pdb
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\obj\Debug\netcoreapp3.1\Zenzero AD Prototype.csprojAssemblyReference.cache
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\obj\Debug\netcoreapp3.1\Zenzero AD Prototype.AssemblyInfoInputs.cache
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\obj\Debug\netcoreapp3.1\Zenzero AD Prototype.AssemblyInfo.cs
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\obj\Debug\netcoreapp3.1\Zenzero AD Prototype.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\obj\Debug\netcoreapp3.1\Zenzero AD Prototype.pdb
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\obj\Debug\netcoreapp3.1\Zenzero AD Prototype.genruntimeconfig.cache
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Identity.Client.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\obj\Debug\netcoreapp3.1\Zenzero AD Prototype.csproj.CopyComplete
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Graph.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Graph.Core.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Graph.Auth.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Graph.Communications.Common.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Graph.Communications.Core.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Graph.Communications.Client.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Graph.Communications.Calls.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Azure.ActiveDirectory.GraphClient.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Data.Edm.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Data.OData.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Data.Services.Client.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\System.Spatial.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\de\Microsoft.Data.Edm.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\es\Microsoft.Data.Edm.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\fr\Microsoft.Data.Edm.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\it\Microsoft.Data.Edm.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\ja\Microsoft.Data.Edm.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\ko\Microsoft.Data.Edm.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\ru\Microsoft.Data.Edm.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\zh-Hans\Microsoft.Data.Edm.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\zh-Hant\Microsoft.Data.Edm.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\de\Microsoft.Data.OData.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\es\Microsoft.Data.OData.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\fr\Microsoft.Data.OData.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\it\Microsoft.Data.OData.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\ja\Microsoft.Data.OData.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\ko\Microsoft.Data.OData.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\ru\Microsoft.Data.OData.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\zh-Hans\Microsoft.Data.OData.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\zh-Hant\Microsoft.Data.OData.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\de\Microsoft.Data.Services.Client.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\es\Microsoft.Data.Services.Client.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\fr\Microsoft.Data.Services.Client.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\it\Microsoft.Data.Services.Client.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\ja\Microsoft.Data.Services.Client.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\ko\Microsoft.Data.Services.Client.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\ru\Microsoft.Data.Services.Client.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\zh-Hans\Microsoft.Data.Services.Client.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\zh-Hant\Microsoft.Data.Services.Client.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\de\System.Spatial.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\es\System.Spatial.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\fr\System.Spatial.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\it\System.Spatial.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\ja\System.Spatial.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\ko\System.Spatial.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\ru\System.Spatial.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\zh-Hans\System.Spatial.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\zh-Hant\System.Spatial.resources.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Configuration.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Primitives.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Configuration.FileExtensions.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Extensions.FileProviders.Abstractions.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Extensions.FileProviders.Physical.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Extensions.FileSystemGlobbing.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Configuration.Json.dll
+C:\Users\Jordan\source\repos\Zenzero AD Prototype\Zenzero AD Prototype\obj\Debug\netcoreapp3.1\Zenzero AD Prototype.csproj.CoreCompileInputs.cache
