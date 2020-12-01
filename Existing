@@ -1,0 +1,657 @@
+#$WhatIfPreference = $true;
+
+$logFolder = "C:\Temp";
+$transcriptFilePath = "$logFolder\Logged_PS_Cmds-{1:yyyy-MM-dd HH.mm.ss}.txt" -f $env:USERPROFILE,[datetime]::Now;
+$logFilePath = "$logFolder\Zsl-365-LeaverScript-Log-{1:yyyy-MM-dd HH.mm.ss}.txt" -f $env:USERPROFILE,[datetime]::Now;
+
+[string]$leaverEmail = $null;
+
+[string]$fullAccessUser = $null;
+[string]$forwardToUser = $null;
+[bool]$deliverAndForward = $true;
+[string]$addGroupUser = $null;
+
+[int]$mailboxAction = 0;
+[int]$fullAccess = 0;
+[string]$forwardTo = $null;
+[int]$emptyGroupChoice = 0;
+
+[bool]$litigationHoldEnabled = $false;
+
+[int]$ticketId = $null;
+
+Function Add-Log-Folder {
+    [System.IO.Directory]::CreateDirectory($logFolder);
+}
+
+Function Write-Log {
+    param(
+        [string]$LogText, 
+        [Parameter(Mandatory=$false)][bool]$OutputText = $true,
+        [System.ConsoleColor]$ForegroundColor = 15,
+        [Parameter(Mandatory=$false)][bool]$NoNewLine = $false
+    )
+
+    if($OutputText -eq $true) {
+        Write-Host $LogText -ForegroundColor $ForegroundColor -NoNewLine:$NoNewLine;
+    }
+
+    try {
+        # Make sure the log file exists
+        if([System.IO.File]::Exists($logFilePath) -eq $false) {
+            $file = [System.IO.File]::Create($logFilePath);
+            $file.Dispose();
+        }
+
+        # Remove all carriage returns etc. as we're going to add some ourselves here to make sure the log is consistent
+        $LogText -Replace [System.Environment]::NewLine, '' | Out-Null;
+
+        [System.IO.File]::AppendAllText($logFilePath, "$LogText`r`n");    
+    }
+    catch {
+        Write-Host "Could not write to log.  Script cannot continue" -ForegroundColor Red;
+        Quit;   
+    }
+}
+
+Function Check-Modules {
+    if($null -eq (Get-Module -ListAvailable -Name "MSOnline")) {
+        Install-Missing-Module -Name "MSOnline"
+    }
+
+    if($null -eq (Get-Module -ListAvailable -Name "AzureAD")) {
+        Install-Missing-Module -Name "AzureAD"
+    }
+}
+
+Function Install-Missing-Module {
+    param([string]$Name)
+
+    Write-Host "$Name module not found. It will now be installed. Please wait..." -ForegroundColor Yellow;
+    Install-Module -Name $Name -Force 3>$null
+}
+
+Function Show-Ask-Delete-Or-Shared {
+    $message = "`r`nWould you like to delete the mailbox or convert it to shared?";
+
+    $convert = New-Object System.Management.Automation.Host.ChoiceDescription "&Convert", "Convert the mailbox to shared";
+    $delete = New-Object System.Management.Automation.Host.ChoiceDescription "&Delete", "Delete the mailbox";
+
+    $options = [System.Management.Automation.Host.ChoiceDescription[]]($convert, $delete);
+
+    return $host.UI.PromptForChoice($null, $message, $options, 0);
+}
+
+Function Show-Ask-Give-Access {
+    $message = "`r`nWould you like to give another user full access to the leaver email account?";
+
+    $yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes", "You will be asked for the email address of the user who should have access to the leaver account";
+    $no = New-Object System.Management.Automation.Host.ChoiceDescription "&No", "No access will be given";
+
+    $options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no);
+
+    return $host.UI.PromptForChoice($null, $message, $options, 0);
+}
+
+Function Show-Ask-Forward-Emails {
+    $message = "`r`nWould you like to forward emails from the leaver account to another user?";
+
+    $yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes", "You will be asked for the email address of the user emails should be forwarded to";
+    $no = New-Object System.Management.Automation.Host.ChoiceDescription "&No", "No forwarder will be set up";
+
+    $options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no);
+
+    return $host.UI.PromptForChoice($null, $message, $options, 0);
+}
+
+Function Show-Ask-Forward-Type {
+    param ([string]$GroupName);
+
+    $message = "`r`nWould you like to deliver and forward or forward only?";
+
+    $yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Deliver and Forward", "Forwarded emails will be saved in the leaver's mailbox";
+    $no = New-Object System.Management.Automation.Host.ChoiceDescription "&Forward Only", "Forwarded emails will not arrive in the leaver's mailbox";
+
+    $options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no);
+
+    return $host.UI.PromptForChoice($null, $message, $options, 0);
+}
+
+Function Show-Empty-Group-Choice {
+    param ([string]$GroupName);
+
+    $message = "`r`nThe group $GroupName will be left empty.  Would you like to add a new user to the group before continuing?";
+
+    $yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes", "You will be asked for the email address of the user to add to the group";
+    $no = New-Object System.Management.Automation.Host.ChoiceDescription "&No", "The group will be left empty";
+
+    $options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no);
+
+    return $host.UI.PromptForChoice($null, $message, $options, 0);
+}
+
+Function Show-Action-Continue-Choice {
+    param ([string]$GroupName);
+
+    $message = "`r`nWould you like to continue and apply these actions now?";
+
+    $yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes", "Actions will be performed.  You cannot undo this process.";
+    $no = New-Object System.Management.Automation.Host.ChoiceDescription "&No", "Script will quit";
+
+    $options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no);
+
+    return $host.UI.PromptForChoice($null, $message, $options, 0);
+}
+
+Function Is-Group-Left-Empty {
+    param ([string]$GroupName);
+
+    $groupMembers = Get-DistributionGroupMember -Identity $GroupName | Select-Object -Property PrimarySmtpAddress | Measure-Object;
+
+    return $groupMembers.Count -eq 0;
+}
+
+Function Delete-Mailbox {
+    param([string]$LeaverEmail);
+
+    Remove-Mailbox -Identity $LeaverEmail -Confirm:$false;
+}
+
+Function Set-Mailbox-Shared {
+    param([string]$LeaverEmail);
+
+    Set-Mailbox $leaverEmail -Type shared
+}
+
+Function Grant-Mailbox-Full-Access {
+    param([string]$LeaverEmail, [string]$FullAccessUser);
+
+    Add-MailboxPermission -Identity $LeaverEmail -User $FullAccessUser -AccessRights FullAccess -InheritanceType All
+}
+
+Function Set-Mailbox-Forwarder {
+    param([string]$LeaverEmail, [bool]$DeliverAndForward, [string]$ForwardToUser);
+
+    Set-Mailbox -Identity $LeaverEmail -DeliverToMailboxAndForward $DeliverAndForward -ForwardingAddress $ForwardToUser -Confirm:$false
+}
+
+Function Block-Sign-In {
+    param([string]$LeaverEmail);
+
+    Set-MsolUser -UserPrincipalName $LeaverEmail -BlockCredential $True
+}
+
+Function Check-Litigation-Hold-Enabled {
+    param([string]$LeaverEmail);
+
+    return ((Get-Mailbox -Identity $LeaverEmail).LitigationHoldEnabled);
+}
+
+Function Remove-All-Licences {
+    param([string]$LeaverEmail);
+
+    (Get-MsolUser -UserPrincipalName $LeaverEmail).Licenses.AccountSkuId | ForEach-Object {
+        Set-MsolUserLicense -UserPrincipalName $LeaverEmail -RemoveLicenses $_;
+        Write-Log "Unassigned licence $_"
+    }
+}
+
+Function Check-Account-Exists {
+    param([string]$Email);
+
+    [bool](Get-MsolUser -UserPrincipalName $Email -ErrorAction SilentlyContinue)
+}
+
+Function Check-Mailbox-Exists {
+    param([string]$Email);
+
+    return [bool](Get-Mailbox -Identity $Email -ErrorAction SilentlyContinue)
+}
+
+Function Wipe-Mobile-Device {
+    param([string]$LeaverEmail);
+    
+    Get-MobileDevice -Mailbox $LeaverEmail | ForEach-Object {
+        try {
+            Clear-MobileDevice -Identity $_.Identity -AccountOnly -Confirm:$false
+        }
+        catch [InvalidClientEASVersionException] {
+            Write-Log "Could not wipe device $($_.Identity) as the client EAS version does not support this." -ForegroundColor Yellow
+            Write-Log $_.Exception.Message -OutputText $false
+        }
+    }
+}
+
+Function Disable-Mobile-Device {
+    param([string]$LeaverEmail);
+
+    Get-MobileDevice -Mailbox $LeaverEmail | ForEach-Object {
+        Set-CASMailbox -Identity $LeaverEmail -ActiveSyncBlockedDeviceIDs @{add=$_.DeviceId} | Out-Null
+    }
+}
+
+Function DisablePop3ImapActiveSync {
+    param([string]$LeaverEmail);
+
+    Set-CASMailbox -Identity $LeaverEmail -PopEnabled $false -ImapEnable $false -ActiveSyncEnabled $false;
+}
+
+Function Get-Ticket {
+    param([int]$TicketId);
+
+    $url = "https://esb-ticket.zenzero.co.uk/api/ticket/f124eaa7-5ee0-4a75-a5de-c00ba8a35147/$TicketId";
+
+    try {
+        $result = Invoke-WebRequest $url -Method Get -UseBasicParsing | ConvertFrom-Json;
+        return $result;
+    }
+    catch {
+        return $null;
+    }
+}
+
+Function Show-Correct-Ticket-Choice {
+    param ([string]$GroupName);
+
+    $message = "`r`nIs this the right ticket?";
+
+    $yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes", "Script will continue";
+    $no = New-Object System.Management.Automation.Host.ChoiceDescription "&No", "You will get the chance to enter another ticket number";
+
+    $options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no);
+
+    return $host.UI.PromptForChoice($null, $message, $options, 0);
+}
+
+Function Is-Email-Valid {
+    param([string]$Email)
+
+    try {
+        [MailAddress]$Email
+        return $true
+    }
+    catch {
+        return $false
+    }
+}
+
+Function User-Is-Partner {
+    try {
+        # Get-MsolPartnerContract doesn't throw an exception on error, so we need to SilentlyContinue & then check the array size
+        $tenants = Get-MsolPartnerContract -ErrorAction SilentlyContinue
+        return $tenants.Count -gt 0
+    }
+    catch {
+        return $false
+    }
+}
+
+Function User-Is-Tenant-Authorised {
+    param([string]$TenantId)
+
+    return [bool](Get-MsolPartnerContract -All | Where-Object {$_.TenantId -eq $TenantId})
+}
+
+Function Save-Log-To-Ticket {
+    Write-Host "`r`nWriting log to ticket $ticketId...";
+
+    $url = "https://esb-ticket.zenzero.co.uk/api/ticket/f124eaa7-5ee0-4a75-a5de-c00ba8a35147/note";
+
+    try {
+        $logText = [System.IO.File]::ReadAllText($logFilePath);
+
+        $noteBody = @{
+            TicketId = $ticketId;
+            NoteBody = $logText;
+            Display = "Internal";
+        };
+
+        $headers = @{
+            "Content-Type" = "application/json"
+        };
+
+        $result = Invoke-RestMethod -Uri $url -Method Post -Body (ConvertTo-Json $noteBody) -Headers $headers;
+
+        if($result -eq $true) {
+            Write-Host "Log successfully written to ticket $ticketId`r`n" -ForegroundColor Green;
+        }
+    }
+    catch {
+        Write-Host "Failed to save log to ticket.  Please inform the software team & upload the log manually from $logFilePath" -ForegroundColor Red;
+    }
+}
+
+Function Quit {
+    Stop-Transcript;
+
+    # Save the log to the ticket on every quit
+    Save-Log-To-Ticket;
+
+    Get-PSSession | Remove-PSSession;
+
+    Write-Host "Press any key to exit...`r`n";
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown");
+
+    exit;
+}
+
+# Stop execution if there's an error
+$ErrorActionPreference = 'Stop'
+
+Add-Log-Folder | Out-Null;
+Start-Transcript $transcriptFilePath -NoClobber
+
+Write-Host "`r`n***************************************" -ForegroundColor Green;
+Write-Host "* Microsoft Office 365 Leaver Process *" -ForegroundColor Green;
+Write-Host "***************************************" -ForegroundColor Green;
+
+# Remove old sessions in case the user previously force quit out
+Get-PSSession | Remove-PSSession
+
+Check-Modules;
+
+$isValidTicket = $false;
+
+Do {
+    $ticketId = Read-Host "`r`nPlease enter the ticket ID related to this request";
+
+    [int]$ticketIdParsed = $null;
+    if([int]::TryParse($ticketId, [ref]$ticketIdParsed) -eq $true) {
+        $ticket = Get-Ticket -TicketId $ticketId;
+        
+        if($null -eq $ticket) {
+            Write-Log "`r`nCould not find ticket $ticketId" -ForegroundColor Red;
+        } else {
+            Write-Log "`r`nLoaded ticket $($ticket.id)`r`nCompany: $($ticket.companyName)`r`nSummary: $($ticket.summary)" -ForegroundColor Green;
+            
+            $isCorrectTicket = Show-Correct-Ticket-Choice;
+            
+            # Use has responded Y to 'is this the right ticket?' - carry on with script
+            if($isCorrectTicket -eq 0) {
+                $isValidTicket = $true;
+            }
+        }
+    } else {
+        Write-Log "The ticket ID must be a number" -ForegroundColor Red;
+    }
+} while ($isValidTicket -eq $false)
+
+$delegatedOrg = Read-Host "`r`nPlease enter the primary domain name of the tenant you're managing";
+
+Write-Log "Organisation: $delegatedOrg" -OutputText $false;
+
+Write-Host "`r`nYou will now see a dialog requesting your login credentials. Please sign in with a user authorised to administer the tenant where the leaver account exists"
+
+# Ask for credentials. Present login box again upon failure
+$isValidCredentials = $false
+
+Do {
+    try {
+        $credentials = Get-Credential -Message "Please sign in with a user authorised to administer the tenant where the leaver account exists`r`n";
+
+        if($null -eq $credentials) {
+            Write-Host "`r`nCancelled`r`n" -ForegroundColor Red
+            Quit
+        }
+    
+        $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/?DeletegatedOrg=$delegatedOrg -Credential $credentials -Authentication Basic -AllowRedirection
+    
+        Import-PSSession $Session -DisableNameChecking | Out-Null
+    
+        # We need some modules from the MsolService as well.  We can connect with the same credentials
+        Connect-MsolService -Credential $credentials
+
+        Write-Log "Running process using delegate account $($credentials.UserName)" -OutputText $false
+
+        if(User-Is-Partner -eq $false) {
+            Write-Log "`r`n$($credentials.UserName) is not an authorised partner administrator" -ForegroundColor Red
+            continue
+        }
+
+        $delegatedOrgTenantId = Get-MsolPartnerContract -DomainName $delegatedOrg | Select-Object -ExpandProperty TenantId
+
+        if((User-Is-Tenant-Authorised -TenantId $delegatedOrgTenantId) -eq $false) {
+            Write-Log "`r`n$($credentials.UserName) is not authorised to administrate $delegatedOrg" -ForegroundColor Red
+            continue
+        }
+
+        $isValidCredentials = $true
+    }
+    catch {
+        Write-Host "`r`nInvalid credentials. Please try again." -ForegroundColor Red
+    }
+} while ($isValidCredentials -eq $false)
+
+# Ask for the leaver email. Present input again upon failure
+$leaverAccountExists = $false
+
+Do {
+    $leaverEmail = Read-Host "`r`nPlease enter the email address of the leaver";
+
+    if((Is-Email-Valid -Email $leaverEmail) -eq $false) {
+        Write-Log "`r`n$leaverEmail is not a valid email address" -ForegroundColor Red
+        continue
+    }
+
+    if((Check-Account-Exists -Email $leaverEmail) -eq $false) {
+        Write-Log "`r`n$leaverEmail does not exist for this tenant" -ForegroundColor Red;
+    } else {
+        $leaverAccountExists = $true
+    }
+} while ($leaverAccountExists -eq $false)
+
+Write-Log "Leaver email: $leaverEmail" -OutputText $false;
+
+$leaverMailboxExists = Check-Mailbox-Exists -Email $leaverEmail;
+
+if($leaverMailboxExists -eq $false) {
+    Write-Log "`r`n$leaverEmail does not have a mailbox. Mailbox actions will not be processed" -ForegroundColor Yellow
+}
+
+if($leaverMailboxExists -eq $True) {
+    $mailboxAction = Show-Ask-Delete-Or-Shared;
+
+    # If convert mailbox to shared was selected, ask if they'd like to give full acess to another user
+    if($mailboxAction -eq 0) {
+        Write-Log "Mailbox will be converted to shared" -OutputText $false;
+
+        $fullAccess = Show-Ask-Give-Access;
+
+        if($fullAccess -eq 0) {
+            $validFullAccessUser = $False;
+
+            Do {
+                $fullAccessUser = Read-Host "`r`nEmail address of the user that should have full access";
+
+                if((Is-Email-Valid -Email $fullAccessUser) -eq $false) {
+                    Write-Log "`r`n$fullAccessUser is not a valid email address" -ForegroundColor Red
+                    continue
+                }
+            
+                if((Check-Mailbox-Exists -Email $fullAccessUser) -eq $False) {
+                    Write-Host "`r`n$fullAccessUser does not exist for this tenant" -ForegroundColor Red;    
+                } else {
+                    Write-Log "Full access will be given to $fullAccessUser" -OutputText $false;
+                    $validFullAccessUser = $True;
+                }
+            } while ($validFullAccessUser -eq $False)
+        }
+
+        $forwardTo = Show-Ask-Forward-Emails;
+
+        if($forwardTo -eq 0) {
+            Write-Log "Emails will be forwarded" -OutputText $false;
+
+            $validForwardToUser = $False;
+
+            Do {
+                $forwardToUser = Read-Host "`r`nEmail address of the user that emails should be forwarded to";
+
+                if((Is-Email-Valid -Email $forwardToUser) -eq $false) {
+                    Write-Log "`r`n$forwardToUser is not a valid email address" -ForegroundColor Red
+                    continue
+                }
+
+                if($forwardToUser -eq $leaverEmail) {
+                    Write-Log "`r`nYou cannot forward email to the leaver's " -ForegroundColor Red
+                    continue
+                }
+
+                if((Check-Mailbox-Exists -Email $forwardToUser) -eq $False) {
+                    Write-Host "`r`n$forwardToUser does not exist for this tenant" -ForegroundColor Red;    
+                } else {
+                    Write-Log "Email will be forwarded to $forwardtoUser" -OutputText $false;
+                    $validForwardToUser = $True;
+                }
+            } while ($validForwardToUser -eq $False)
+            
+            $deliverAndForward = Show-Ask-Forward-Type;
+        }
+    }
+}
+
+$groups = Get-DistributionGroup | Where-Object { (Get-DistributionGroupMember $_.Name | ForEach-Object {$_.PrimarySmtpAddress}) -contains $leaverEmail}
+$groupUsersDictionary = [ordered]@{};
+
+foreach ($group in $groups) {
+    $isGroupLeftEmpty = Is-Group-Left-Empty -GroupName $group.Name;
+
+    if($isGroupLeftEmpty -eq $true) {
+        Write-Log "Group $($group.DisplayName) will be left empty if this user is removed" -OutputText $false;
+
+        $emptyGroupChoice = Show-Empty-Group-Choice -GroupName $group.DisplayName;
+
+        if($emptyGroupChoice -eq 0) {
+            $addGroupUser = Read-Host "`r`nEmail address of the user to add to the $($group.DisplayName) group";
+
+            # Add each group / user combination to a dictionary so we can add them all at once later
+            $groupUsersDictionary.Add($group.DisplayName, $addGroupUser);
+
+            Write-Log "Added $addGroupUser to $($group.DisplayName)" -OutputText $false;
+        }
+    }
+}
+
+Write-Log "`r`nThe following actions are about to be performed on account: $($leaverEmail):" -ForegroundColor Yellow;
+Write-Host "`r`n*** IF YOU CHOOSE TO CONTINUE, THESE ACTIONS CANNOT BE UNDONE BY THIS SCRIPT ***`r`n" -ForegroundColor Red;
+
+Write-Log "  * Account sign-in will be blocked";
+
+if($leaverMailboxExists -eq $True) {
+    $litigationHoldEnabled = Check-Litigation-Hold-Enabled -LeaverEmail $leaverEmail;
+}
+    
+if($litigationHoldEnabled -eq $False -And $leaverMailboxExists -eq $True) {
+    switch ($mailboxAction) {
+        0 { 
+            Write-Log "  * Mailbox will be converted to shared"; 
+
+            switch ($fullAccess) {
+                0 { 
+                    Write-Log "  * Full mailbox access will be given to $fullAccessUser"; 
+                }
+            }
+            
+            switch ($forwardTo) {
+                0 { 
+                    Write-Log "  * Emails will be forwarded to $forwardToUser"; 
+
+                    if($deliverAndForward -eq 0) {
+                        Write-Log "  * Forwarded emails will be saved in the leaver's mailbox";
+                    } else {
+                        Write-Log "  * Forwarded emails will not arrive in the leaver's mailbox";
+                    }
+                }
+            }
+
+            Write-Log "  * POP3 and IMAP protocols will be disabled";
+            Write-Log "  * ActiveSync will be disabled";
+        }
+        1 { 
+            Write-Log "  * Mailbox will be deleted"; 
+        }
+    }
+
+    switch ($emptyGroupChoice) {
+        0 { 
+            foreach ($key in $groupUsersDictionary.Keys) {
+                $value = $groupUsersDictionary[$key];
+                Write-Log "  * $value will be added to the $key group";
+            }
+        }
+        1 { 
+            Write-Log "  * The group(s) the user belonged to will be left empty"; 
+        }
+    }
+
+    Write-Log "  * All licences will be unassigned";
+    Write-Log "  * Exchange mailbox data will be wiped from all mobile devices"
+} else {
+    if($litigationHoldEnabled -eq $True) {
+        Write-Log "`r`nLitigation hold is enabled.  Account actions have been limited. Please confirm with the customer what needs to happen to the mailbox data, remove litigation hold and run this tool again" -ForegroundColor Yellow;
+    }
+
+    if($leaverMailboxExists -eq $False) {
+        Write-Log "`r`nThere is no mailbox for this user, so only basic actions will be performed";
+    }
+}
+
+$actionContinueChoice = Show-Action-Continue-Choice
+
+if($actionContinueChoice -eq 0) {
+    Write-Host "`r`nProcessing actions. Please wait...`r`n"
+    Write-Log "The following actions have been complete on account $($leaverEmail):`r`n"
+
+    # These actions will always be run regardless of litigation hold
+    Write-Log "Blocking sign in..." -NoNewLine:$true
+    Block-Sign-In -LeaverEmail $leaverEmail
+    Write-Log "done" -ForegroundColor Green
+
+    # Some actions should only be run if there's no litigation hold
+    if($litigationHoldEnabled -eq $False) {
+        Write-Log "Wiping Exchange data from mobile devices..." -NoNewLine:$true
+        Wipe-Mobile-Device -LeaverEmail $leaverEmail
+        Write-Log "done" -ForegroundColor Green
+
+        Write-Log "Disabling all mobile devices..." -NoNewLine:$true
+        Disable-Mobile-Device -LeaverEmail $leaverEmail
+        Write-Log "done" -ForegroundColor Green
+
+        Write-Log "Unassigning licences..."
+        Remove-All-Licences -LeaverEmail $leaverEmail
+
+        switch ($mailboxAction) {
+            0 {
+                Write-Log "Setting $($leaverEmail)'s mailbox to shared..." -NoNewLine:$true
+                Set-Mailbox-Shared -LeaverEmail $leaverEmail;
+                Write-Log "done" -ForegroundColor Green
+
+                if($fullAccess -eq 0) {
+                    Write-Log "Granting full access to $fullAccessUser..." -NoNewLine:$true
+                    Grant-Mailbox-Full-Access -LeaverEmail $leaverEmail -FullAccessUser $fullAccessUser | Out-Null;
+                    Write-Log "done" -ForegroundColor Green
+                }
+
+                if($forwardTo -eq 0) {
+                    Write-host "Setting a" (&{if($deliverAndForward -eq 0) { "deliver and forward" } else { "forwarder" }}) "to $forwardToUser..." -NoNewLine:$true
+                    Set-Mailbox-Forwarder -LeaverEmail $leaverEmail -DeliverAndForward (&{If($deliverAndForward -eq 0) { $True } Else { $False }}) -ForwardToUser $forwardToUser
+                    Write-Log "done" -ForegroundColor Green
+                }
+
+                Write-Log "Disabling POP3 and IMAP..." -NoNewLine:$true
+                DisablePop3ImapActiveSync -LeaverEmail $leaverEmail
+                Write-Log "done`r`n" -ForegroundColor Green
+            }
+            1 {
+                Write-Log "Deleting account $leaverEmail..." -NoNewLine:$true
+                Delete-Mailbox -LeaverEmail $leaverEmail
+                Write-Log "done`r`n" -ForegroundColor Green
+            }
+        }
+    }
+} else {
+    Write-Log "`r`nProcess cancelled.  Actions will not be run on $leaverEmail`r`n" -ForegroundColor Blue;
+    Quit;
+}
+
+Quit;
